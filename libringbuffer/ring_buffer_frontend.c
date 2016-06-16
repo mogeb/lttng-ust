@@ -527,9 +527,9 @@ void *sig_thread(void *arg)
 			lib_ring_buffer_channel_read_timer(info.si_signo,
 					&info, NULL);
 		} else if (signr == LTTNG_UST_RB_SIG_TEARDOWN) {
-			cmm_smp_mb();
+//			cmm_smp_mb();
 			CMM_STORE_SHARED(timer_signal.qs_done, 1);
-			cmm_smp_mb();
+//			cmm_smp_mb();
 		} else {
 			ERR("Unexptected signal %d\n", info.si_signo);
 		}
@@ -602,9 +602,9 @@ void lib_ring_buffer_wait_signal_thread_qs(unsigned int signr)
 	 * would try to access "chan". However, we still need to wait
 	 * for any currently executing handler to complete.
 	 */
-	cmm_smp_mb();
+//	cmm_smp_mb();
 	CMM_STORE_SHARED(timer_signal.qs_done, 0);
-	cmm_smp_mb();
+//	cmm_smp_mb();
 
 	/*
 	 * Kill with LTTNG_UST_RB_SIG_TEARDOWN, so signal management
@@ -614,7 +614,7 @@ void lib_ring_buffer_wait_signal_thread_qs(unsigned int signr)
 
 	while (!CMM_LOAD_SHARED(timer_signal.qs_done))
 		caa_cpu_relax();
-	cmm_smp_mb();
+//	cmm_smp_mb();
 
 	pthread_mutex_unlock(&timer_signal.lock);
 }
@@ -1075,7 +1075,7 @@ int lib_ring_buffer_open_read(struct lttng_ust_lib_ring_buffer *buf,
 {
 	if (uatomic_cmpxchg(&buf->active_readers, 0, 1) != 0)
 		return -EBUSY;
-	cmm_smp_mb();
+//	cmm_smp_mb();
 	return 0;
 }
 
@@ -1085,7 +1085,7 @@ void lib_ring_buffer_release_read(struct lttng_ust_lib_ring_buffer *buf,
 	struct channel *chan = shmp(handle, buf->backend.chan);
 
 	CHAN_WARN_ON(chan, uatomic_read(&buf->active_readers) != 1);
-	cmm_smp_mb();
+//	cmm_smp_mb();
 	uatomic_dec(&buf->active_readers);
 }
 
@@ -1112,7 +1112,7 @@ int lib_ring_buffer_snapshot(struct lttng_ust_lib_ring_buffer *buf,
 	/*
 	 * Read finalized before counters.
 	 */
-	cmm_smp_rmb();
+//	cmm_smp_rmb();
 	consumed_cur = uatomic_read(&buf->consumed);
 	/*
 	 * No need to issue a memory barrier between consumed count read and
@@ -1196,7 +1196,7 @@ retry:
 	/*
 	 * Read finalized before counters.
 	 */
-	cmm_smp_rmb();
+//	cmm_smp_rmb();
 	consumed_cur = uatomic_read(&buf->consumed);
 	consumed_idx = subbuf_index(consumed, chan);
 	commit_count = v_read(config, &shmp_index(handle, buf->commit_cold, consumed_idx)->cc_sb);
@@ -1210,7 +1210,7 @@ retry:
 	 * Local rmb to match the remote wmb to read the commit count
 	 * before the buffer data and the write offset.
 	 */
-	cmm_smp_rmb();
+//	cmm_smp_rmb();
 
 	write_offset = v_read(config, &buf->offset);
 
@@ -1511,7 +1511,7 @@ void lib_ring_buffer_switch_old_start(struct lttng_ust_lib_ring_buffer *buf,
 	 * Order all writes to buffer before the commit count update that will
 	 * determine that the subbuffer is full.
 	 */
-	cmm_smp_wmb();
+//	cmm_smp_wmb();
 	v_add(config, config->cb.subbuffer_header_size(),
 	      &shmp_index(handle, buf->commit_hot, oldidx)->cc);
 	commit_count = v_read(config, &shmp_index(handle, buf->commit_hot, oldidx)->cc);
@@ -1551,7 +1551,7 @@ void lib_ring_buffer_switch_old_end(struct lttng_ust_lib_ring_buffer *buf,
 	 * Order all writes to buffer before the commit count update that will
 	 * determine that the subbuffer is full.
 	 */
-	cmm_smp_wmb();
+//	cmm_smp_wmb();
 	v_add(config, padding_size, &shmp_index(handle, buf->commit_hot, oldidx)->cc);
 	commit_count = v_read(config, &shmp_index(handle, buf->commit_hot, oldidx)->cc);
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->old - 1,
@@ -1584,7 +1584,7 @@ void lib_ring_buffer_switch_new_start(struct lttng_ust_lib_ring_buffer *buf,
 	 * Order all writes to buffer before the commit count update that will
 	 * determine that the subbuffer is full.
 	 */
-	cmm_smp_wmb();
+//	cmm_smp_wmb();
 	v_add(config, config->cb.subbuffer_header_size(),
 	      &shmp_index(handle, buf->commit_hot, beginidx)->cc);
 	commit_count = v_read(config, &shmp_index(handle, buf->commit_hot, beginidx)->cc);
@@ -1854,12 +1854,12 @@ retry:
 		 * updates to ensure reserve and commit counter updates
 		 * are not seen reordered when updated by another CPU.
 		 */
-		cmm_smp_rmb();
+//		cmm_smp_rmb();
 		commit_count = v_read(config,
 				&shmp_index(handle, buf->commit_cold,
 					sb_index)->cc_sb);
 		/* Read buf->commit_cold[sb_index].cc_sb before buf->offset. */
-		cmm_smp_rmb();
+//		cmm_smp_rmb();
 		if (caa_unlikely(offset_cmp != v_read(config, &buf->offset))) {
 			/*
 			 * The reserve counter have been concurrently updated

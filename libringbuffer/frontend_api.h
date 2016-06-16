@@ -56,7 +56,7 @@ int lib_ring_buffer_get_cpu(const struct lttng_ust_lib_ring_buffer_config *confi
 	rcu_read_lock();
 	cpu = lttng_ust_get_cpu();
 	nesting = ++URCU_TLS(lib_ring_buffer_nesting);
-	cmm_barrier();
+//	cmm_barrier();
 
 	if (caa_unlikely(nesting > 4)) {
 		WARN_ON_ONCE(1);
@@ -73,7 +73,7 @@ int lib_ring_buffer_get_cpu(const struct lttng_ust_lib_ring_buffer_config *confi
 static inline
 void lib_ring_buffer_put_cpu(const struct lttng_ust_lib_ring_buffer_config *config)
 {
-	cmm_barrier();
+//	cmm_barrier();
 	URCU_TLS(lib_ring_buffer_nesting)--;		/* TLS */
 	rcu_read_unlock();
 }
@@ -263,7 +263,7 @@ void lib_ring_buffer_commit(const struct lttng_ust_lib_ring_buffer_config *confi
 	 * Order all writes to buffer before the commit count update that will
 	 * determine that the subbuffer is full.
 	 */
-	cmm_smp_wmb();
+//	cmm_smp_wmb();
 
 	v_add(config, ctx->slot_size, &shmp_index(handle, buf->commit_hot, endidx)->cc);
 

@@ -197,7 +197,7 @@ int lib_ring_buffer_is_finalized(const struct lttng_ust_lib_ring_buffer_config *
 	/*
 	 * Read finalized before counters.
 	 */
-	cmm_smp_rmb();
+//	cmm_smp_rmb();
 	return finalized;
 }
 

@@ -107,7 +107,7 @@ uint64_t read_perf_counter(struct perf_event_mmap_page *pc)
 
 	do {
 		seq = CMM_LOAD_SHARED(pc->lock);
-		cmm_barrier();
+//		cmm_barrier();
 
 		idx = pc->index;
 		if (idx)
@@ -115,7 +115,7 @@ uint64_t read_perf_counter(struct perf_event_mmap_page *pc)
 		else
 			count = 0;
 
-		cmm_barrier();
+//		cmm_barrier();
 	} while (CMM_LOAD_SHARED(pc->lock) != seq);
 
 	return count;

@@ -598,7 +598,7 @@ int lttng_event_create(const struct lttng_event_desc *desc,
 	}
 
 	/* Populate lttng_event structure before tracepoint registration. */
-	cmm_smp_wmb();
+//	cmm_smp_wmb();
 	cds_list_add(&event->node, &chan->session->events_head);
 	cds_hlist_add_head(&event->hlist, head);
 	return 0;
